@@ -1,10 +1,21 @@
+import os
+from pathlib import Path
 from PIL import Image
+
+# Identifică folderul Lab6 indiferent dacă scriptul e în Lab6/ sau Lab6/arsenal/forensics/
+BASE_LAB = Path(__file__).resolve().parent
+if not (BASE_LAB / "probe").exists() and (BASE_LAB.parent.parent / "probe").exists():
+    BASE_LAB = BASE_LAB.parent.parent
+
+os.chdir(BASE_LAB)
+
 
 def ascunde_mesaj(cale_intrare, cale_iesire, mesaj):
     img = Image.open(cale_intrare).convert("RGB")
     pixels = img.load()
     latime, inaltime = img.size
 
+    # Adăugăm terminatorul nul \x00 pentru a ști când să ne oprim la extragere
     date = mesaj.encode("utf-8") + b"\x00"
     biti = "".join(f"{x:08b}" for x in date)
 
@@ -27,6 +38,7 @@ def ascunde_mesaj(cale_intrare, cale_iesire, mesaj):
 
     img.save(cale_iesire)
     print(f"Mesaj ascuns salvat in {cale_iesire}")
+
 
 def dezvaluie_mesaj(cale_imagine):
     img = Image.open(cale_imagine).convert("RGB")
@@ -54,6 +66,12 @@ def dezvaluie_mesaj(cale_imagine):
 
     return octeti.decode("utf-8", errors="ignore")
 
-ascunde_mesaj("probe/foto.jpg", "stego.png", "FLAG{ascuns_in_pixeli}")
-rezultat = dezvaluie_mesaj("stego.png")
-print("Mesaj dezvaluit:", rezultat)
+
+if __name__ == "__main__":
+    cale_intrare = BASE_LAB / "probe" / "foto.jpg"
+    cale_iesire = BASE_LAB / "stego.png"
+
+    print("===== Exercițiul 2.9 (Steganografie LSB) =====")
+    ascunde_mesaj(cale_intrare, cale_iesire, "FLAG{ascuns_in_pixeli}")
+    rezultat = dezvaluie_mesaj(cale_iesire)
+    print("Mesaj dezvăluit:", rezultat)

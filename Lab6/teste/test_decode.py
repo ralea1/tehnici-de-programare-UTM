@@ -1,11 +1,16 @@
 import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
+import os
 import hashlib
 import json
-import os
+from pathlib import Path
+
+# Adaugă automat directorul Lab6 în calea Python (sys.path)
+BASE_DIR = Path(__file__).resolve().parent
+while BASE_DIR.name != "Lab6" and BASE_DIR != BASE_DIR.parent:
+    BASE_DIR = BASE_DIR.parent
+
+sys.path.insert(0, str(BASE_DIR))
+
 from arsenal.forensics.decode import ghici_strat, desfa, citibil
 
 def test_a2_ghici_strat():

@@ -1,3 +1,18 @@
+import os
+import re
+import zipfile
+from pathlib import Path
+from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
+
+# Localizează folderul Lab6 indiferent dacă scriptul e în Lab6/ sau Lab6/arsenal/forensics/
+BASE_LAB = Path(__file__).resolve().parent
+if not (BASE_LAB / "probe").exists() and (BASE_LAB.parent.parent / "probe").exists():
+    BASE_LAB = BASE_LAB.parent.parent
+
+os.chdir(BASE_LAB)
+
+
 print("===== Exercitiul B1 =====")
 def tip_real(cale):
     with open(cale, "rb") as f:
@@ -14,23 +29,17 @@ def tip_real(cale):
 
     return cap.hex()
 
-print("Tip probe/foto.jpg:", tip_real("probe/foto.jpg"))
-print("Tip probe/ascuns.png:", tip_real("probe/ascuns.png"))
+print("Tip probe/foto.jpg:", tip_real(BASE_LAB / "probe" / "foto.jpg"))
+print("Tip probe/ascuns.png:", tip_real(BASE_LAB / "probe" / "ascuns.png"))
 
 
 print("===== Exercitiul B2 =====")
-import re
-
-date = open("probe/ascuns.png", "rb").read()
-
+date = open(BASE_LAB / "probe" / "ascuns.png", "rb").read()
 for m in re.findall(rb"[ -~]{4,}", date):
     print(m.decode("latin1"))
 
 
 print("===== Exercitiul B3 =====")
-from PIL import Image
-from PIL.ExifTags import TAGS, GPSTAGS
-
 def dms_in_zecimal(dms, ref):
     grade = float(dms[0])
     minute = float(dms[1])
@@ -40,7 +49,7 @@ def dms_in_zecimal(dms, ref):
         zecimal = -zecimal
     return zecimal
 
-imagine = Image.open("probe/foto.jpg")
+imagine = Image.open(BASE_LAB / "probe" / "foto.jpg")
 exif = imagine._getexif() or {}
 
 gps_info = {}
@@ -62,23 +71,20 @@ else:
 
 
 print("===== Exercitiul B4 =====")
-import zipfile
-
-date = open("probe/ascuns.png", "rb").read()
+date = open(BASE_LAB / "probe" / "ascuns.png", "rb").read()
 i = date.find(b"PK\x03\x04")
 
 if i != -1:
-    with open("gasit.zip", "wb") as f:
+    cale_zip = BASE_LAB / "gasit.zip"
+    folder_extras = BASE_LAB / "extras_din_zip"
+    
+    with open(cale_zip, "wb") as f:
         f.write(date[i:])
-    print(f"Arhiva extrasa cu succes in gasit.zip de la octetul {i}")
+    print(f"Arhiva extrasa cu succes in {cale_zip.name} de la octetul {i}")
 
-    with zipfile.ZipFile("gasit.zip", "r") as z:
+    with zipfile.ZipFile(cale_zip, "r") as z:
         print("Fisiere gasite in arhiva:", z.namelist())
-        z.extractall("extras_din_zip")
-        print("Continutul a fost extras in directorul 'extras_din_zip'")
+        z.extractall(folder_extras)
+        print(f"Continutul a fost extras in directorul '{folder_extras.name}'")
 else:
     print("Nu a fost gasita nicio semnatura ZIP in fisier.")
-
-
-
-
