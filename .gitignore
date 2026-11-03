@@ -22,3 +22,5 @@ stego.png
 .idea/
 *.swp
 Thumbs.db
+
+.pytest_cache/
